@@ -1,8 +1,102 @@
-;#####csound emacs mode#####
-;;(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/stef-elisp")
-;;(require 'stef-elisp)
 
-;#####supercollider emacs mode#####
+(defun move-text-internal (arg)
+   (cond
+    ((and mark-active transient-mark-mode)
+     (if (> (point) (mark))
+            (exchange-point-and-mark))
+     (let ((column (current-column))
+              (text (delete-and-extract-region (point) (mark))))
+       (forward-line arg)
+       (move-to-column column t)
+       (set-mark (point))
+       (insert text)
+       (exchange-point-and-mark)
+       (setq deactivate-mark nil)))
+    (t
+     (beginning-of-line)
+     (when (or (> arg 0) (not (bobp)))
+       (forward-line)
+       (when (or (< arg 0) (not (eobp)))
+            (transpose-lines arg))
+       (forward-line -1)))))
+
+(defun move-text-down (arg)
+   "Move region (transient-mark-mode active) or current line
+  arg lines down."
+   (interactive "*p")
+   (move-text-internal arg))
+
+(defun move-text-up (arg)
+   "Move region (transient-mark-mode active) or current line
+  arg lines up."
+   (interactive "*p")
+   (move-text-internal (- arg)))
+
+(global-set-key [\M-\C-up] 'move-text-up)
+(global-set-key [\M-\C-down] 'move-text-down)
+
+
+
+(add-to-list 'load-path "/usr/share/emacs/site-lisp")
+(require 'dircolors) 
+(setq load-path (cons "~/.emacs.d/org2blog/" load-path))
+(require 'org2blog-autoloads)
+
+(setq org2blog/wp-blog-alist
+      '(("wordpress"
+	 :url "http://localhost:8008/xmlrpc.php"
+	 :username "egelor"
+	 :default-title "Notes "
+	 :default-categories ("org2blog" "emacs")
+	 :tags-as-categories nil)
+	("my-blog"
+	 :url "http://localhost:8008/xmlrpc.php"
+	 :username "egelor")))
+
+
+(add-hook 'after-init-hook 'global-company-mode)
+
+(require 'ido)
+(ido-mode t)
+
+
+
+(add-to-list 'load-path "~/.emacs.d/color-theme-6.6.0")
+(require 'color-theme)
+(eval-after-load "color-theme"
+  '(progn
+     (color-theme-initialize)
+     (color-theme-hober)))
+
+
+
+	
+
+
+
+(add-to-list 'load-path "~/.emacs.d/el-get/el-get")
+(add-to-list 'load-path "~/elisp")
+(unless (require 'el-get nil 'noerror)
+  (with-current-buffer
+      (url-retrieve-synchronously
+       "https://raw.githubusercontent.com/dimitri/el-get/master/el-get-install.el")
+    (goto-char (point-max))
+    (eval-print-last-sexp)))
+
+(add-to-list 'el-get-recipe-path "~/.emacs.d/el-get-user/recipes")
+(el-get 'sync)
+
+(global-font-lock-mode 1)
+(add-hook 'org-mode-hook 'turn-on-font-lock) 
+
+
+
+  (setq erc-echo-notice-in-minibuffer-flag t)
+
+  (global-set-key "\C-c L" 'org-insert-link-global )
+  (global-set-key "\C-c o" 'org-open-at-point-global)
+
+
 
 (require 'sclang)
 (require 'w3m)
@@ -23,22 +117,9 @@
 (transient-mark-mode 1)
 (menu-bar-mode t)
 
-    (require 'color-theme)
-    (color-theme-initialize)
-    (color-theme-lethe)
 
 
-
-(custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(color-theme-selection "Arjen" nil (color-theme))
- '(emacs-goodies-el-defaults t)
- '(pop-up-frames nil)
- '(pop-up-windows t)
- '(sclang-auto-scroll-post-buffer t)
+'(sclang-auto-scroll-post-buffer t)
  '(sclang-eval-line-forward nil)
  '(sclang-help-path (quote ("/usr/local/share/SuperCollider/Help" "~/.local/share/SuperCollider/Help")))
  '(sclang-library-configuration-file "~/.config/SuperCollider/sclang_conf.yaml")
@@ -46,13 +127,13 @@
  '(sclang-server-panel "Server.default.makeGui")
  '(show-paren-mode t)
  '(w3m-pop-up-frames t)
- '(w3m-pop-up-windows nil))
-(custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- )
+ '(w3m-pop-up-windows nil)
+
+;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ 
 
 ;## hack to make the cursor work normally in w3m-mode - thanks martin :)
 (eval-after-load "w3m"
@@ -67,7 +148,6 @@
  ))
 
 
-
 (defun sclang-turn-on-eldoc-mode ()
  ; "Enable eldoc-mode for sclang"
   (interactive)
@@ -78,22 +158,35 @@
 (add-hook 'sclang-mode-hook 'sclang-turn-on-eldoc-mode)
 
 
-;# set emacs the standard editor for Python
-(defvar server-buffer-clients) 
-(when (and (fboundp 'server-start) (string-equal (getenv "TERM") 'xterm)) 
-  (server-start) 
-  (defun fp-kill-server-with-buffer-routine () 
-    (and server-buffer-clients (server-done))) 
-  (add-hook 'kill-buffer-hook 'fp-kill-server-with-buffer-routine)) 
-
 ;# ORG-MODE ACTIVATION
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
 (global-set-key "\C-cl" 'org-store-link)
 (global-set-key "\C-ca" 'org-agenda)
 (global-set-key "\C-cb" 'org-iswitchb)
+(global-font-lock-mode 1)  ; for all buffers
+(add-hook 'org-mode-hook 'turn-on-font-lock) ; org buffer only
+(setq org-agenda-custom-commands
+   '(("f" occur-tree "FIXME")))
+
+
+(global-set-key (kbd "C-c c") 'org-capture)
+
+(setq org-default-notes-file "~/org/organizer.org")
+
+(setq org-refile-targets '((org-agenda-files . (:maxlevel . 6 ))))
+
+(global-set-key (kbd "C-c o") 
+                (lambda () (interactive) (find-file "~/org/TODO.org")))
+
+(setq org-todo-keywords
+'((sequence "TODO(t)" "|" "DONE(d)")
+(sequence "REPORT(r)" "BUG(b)" "DOING(k)" "|" "FIXED(f)")
+(sequence "|" "CANCELED(c)")))
 
 
 ;; Org count words 
+
+
 
 (defvar count-words-buffer
   nil
@@ -110,6 +203,7 @@
   ;; create timer to keep count-words-paragraph updated
   (run-with-idle-timer 1 t 'wicked/update-wc))
 
+
 ;; add count words paragraph the mode line
 (unless (memq 'count-words-buffer global-mode-string)
   (add-to-list 'global-mode-string "words: " t)
@@ -123,7 +217,7 @@
     (goto-char (point-min))
     (let ((count 0))
       (while (not (eobp))
-  (forward-word 1)
+	(forward-word 1)
         (setq count (1+ count)))
       count)))
 
@@ -187,3 +281,19 @@ do this for the whole buffer."
   (setq ad-return-value
 	(wicked/org-update-checkbox-count (ad-get-arg 1))))
 
+
+(put 'downcase-region 'disabled nil)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(org-agenda-files
+   (quote
+    ("~/org/Emacs.org" "~/org/TODO.org" "~/story/rela.org"))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
