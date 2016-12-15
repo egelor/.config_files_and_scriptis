@@ -19,7 +19,7 @@
 
 (setq org-todo-keywords
 '((sequence "TODO(t)" "|" "DONE(d)")
-(sequence "Command(o)" "BUG(b)" "DOING(k)" "|" "SEARCH(f)")
+(sequence "Command(o)" "fixme(f)" "DOING(k)" "|" "SEARCH(s)")
 (sequence "|" "CANCELED(c)")))
 
 
@@ -136,3 +136,20 @@ do this for the whole buffer."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
+(setq org-capture-templates
+      '(("a" "Appointment" entry (file  "~/Dropbox/org/appointment.org" "Appointments")
+	 "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n")
+	("n" "Note" entry (file+headline "~/Dropbox/org/notes.org" "Notes")
+	 "* Note %?\n%T")
+	("l" "emacs" entry (file+headline "~/Dropbox/org/emacs.org" "emacs")
+	 "* %? %^L %^g \n%T" :prepend t)
+	;("b" "Blog idea" entry (file+headline "~/Dropbox/orgfiles/i.org" "Blog Topics:")
+	; "* %?\n%T" :prepend t)
+	;("t" "To Do Item" entry (file+headline "~/Dropbox/orgfiles/i.org" "To Do Items")
+	; "* %?\n%T" :prepend t)
+	("j" "Journal" entry (file+datetree "~/Dropbox/journal.org")
+	 "* %?\nEntered on %U\n  %i\n  %a")
+	;("s" "Screencast" entry (file "~/Dropbox/orgfiles/screencastnotes.org")
+					; "* %?\n%i\n")
+	))

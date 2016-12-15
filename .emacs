@@ -10,16 +10,47 @@
 
 ;; Second init file
 (load "~/.emacs.d/.emAcs" t)
-
+(load "~/.emacs.d/.emacs2" t)
 
 (add-to-list 'load-path "~/.emacs.d/elpa/company-0.8.12")
 (autoload 'company-mode "company" nil t)
 (add-hook 'after-init-hook' global-company-mode)
 
+;; gnus
+(require 'gnus)
+(setq gnus-select-method '(nnml ""))
+(setq bbdb/news-auto-create-p t)
+(setq bbdb-use-pop-up nil)
+;;nnir to be able to search within your gmail/imap mail
+(require 'nnir)
+;; bbdb
+(add-to-list 'load-path "~/.emacs.d/el-get/bbdb/lisp")
+(add-to-list 'load-path  "~/.emacs.d/bbdb-autoloads")
+(require 'bbdb-autoloads)
+(require 'bbdb)
+    (add-to-list 'file-coding-system-alist
+                 (cons "\\.bbdb\\'" bbdb-file-coding-system))
+    (bbdb-initialize 'gnus 'message)
+    (add-hook 'message-setup-hook 'bbdb-define-all-aliases)
+(global-set-key (kbd "C-c b") 'bbdb)
+    (setq bbdb-canonicalize-net-hook
+          '(lambda (addr)
+             (cond ((string-match "\\`\\([^@+]+\\)\\+[^@]+\\(@.*\\)\\'" addr)
+                    (concat (match-string 1 addr) (match-string 2 addr)))
+                   ((string-match "\\`\\([^@]+@\\).*\\.\\(\\w+\\.\\w+\\.\\w+\\)\\'"
+                                  addr)
+                    (concat (match-string 1 addr) (match-string 2 addr)))
+                   (t addr)))
+          bbdb-north-american-phone-numbers-p nil
+          bbdb-default-country "Greece"
+          bbdb-print-require t
+          bbdb-print-net 'all)
 
-;; DIRCOLORS
+(add-hook 'gnus-startup-hook 'bbdb-insinuate-gnus)
+(add-to-list 'load-path "~/.emacs.d/bbdb-vcard/vcard.el")
+(add-to-list 'load-path "~/.emacs.d/bbdb-vcard/test-bbdb-vcard.el")
+;; Dircolors
 (require 'dircolors)
-
 ;; Xml-rpc-el
 (add-to-list 'load-path "~/.emacs.d/el-get/xml-rpc-el")
 (require 'xml-rpc)
@@ -142,3 +173,18 @@
 
 
 
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(org-agenda-files
+   (quote
+    ("~/org/exoda.org" "~/Documents/eGelor_Programming/Arduino/org's/arduino.org" "~/org/video.org" "~/org/Emacs.org" "~/org/TODO.org" "~/org/Server.org" "~/org/Audio_signals.org")))
+ '(send-mail-function (quote smtpmail-send-it)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
