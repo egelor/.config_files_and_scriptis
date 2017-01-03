@@ -3,7 +3,9 @@
 ;;; interfacing with ELPA, the package archive.
 ;;; Move this code earlier if you want to reference
 ;;; packages in your .emacs.
+;; press F8 on keypad to lookup definition
 
+(load "~/.emacs.d/org-one-to-many/org-one-to-many" t)
 ;;package
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
@@ -11,6 +13,7 @@
 ;; Second init file
 (load "~/.emacs.d/.emAcs" t)
 (load "~/.emacs.d/.emacs2" t)
+
 
 (add-to-list 'load-path "~/.emacs.d/elpa/company-0.8.12")
 (autoload 'company-mode "company" nil t)
@@ -108,6 +111,12 @@
 (global-set-key "\C-c L" 'org-insert-link-global )
 (global-set-key "\C-c o" 'org-open-at-point-global)
 
+(setq org-html-htmlize-output-type 'css) ; default: 'inline-css
+(setq org-html-htmlize-font-prefix "org-") ; default: "org-"
+
+
+
+		 
 ;#SuperCollider w3m
 (require 'sclang)
 (require 'w3m)
@@ -180,8 +189,10 @@
  ;; If there is more than one, they won't work right.
  '(org-agenda-files
    (quote
-    ("~/org/exoda.org" "~/Documents/eGelor_Programming/Arduino/org's/arduino.org" "~/org/video.org" "~/org/Emacs.org" "~/org/TODO.org" "~/org/Server.org" "~/org/Audio_signals.org")))
- '(send-mail-function (quote smtpmail-send-it)))
+    ("~/org/exoda.org" "~/Documents/eGelor_Programming/Arduino/org's/arduino.org" "~/org/video.org" "~/org/Emacs.org" "~/org/TODO.org" "~/org/Server.org")))
+ '(send-mail-function (quote smtpmail-send-it))
+ '(smtpmail-smtp-server "smtp.gmail.com")
+ '(smtpmail-smtp-service 25))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
