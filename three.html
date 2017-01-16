@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Three.js</title>
+<!-- 2017-01-03 Tue 10:38 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="U-ERGORGANON\Erg.Organon" />
+<script src= "three.js-dev/build/three.js"></script>
+<script src= "dat.gui-master/build/dat.gui.min.js"></script>
+    <script src="essential-threejs-master/libs/OrbitControls.js"></script>
+
+</head>
+<body>
+<script>
+    // global variables
+var renderer;
+var scene;
+var camera;
+var control;
+var cameraControl;
+function init() {
+// create a scene, that will hold all our elements such as objects, cameras and
+    scene = new THREE.Scene();
+// create a camera, which defines where we're looking at.
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+// create a render, sets the background color and the size
+    renderer = new THREE.WebGLRenderer();
+    renderer.setClearColor(0x000000, 1.0);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+// create the ground plane
+    var planeGeometry = new THREE.PlaneGeometry(200, 200);
+    var planeMaterial = new THREE.MeshLambertMaterial({color: 0xcccccc});
+    var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    plane.receiveShadow = true;
+// rotate and position the plane
+    plane.rotation.x = -0.5 * Math.PI;
+    plane.position.x = 0;
+    plane.position.y = -2;
+    plane.position.z = 0;
+// add the plane to the scene
+    scene.add(plane);
+// create a cube
+    var cubeGeometry = new THREE.BoxGeometry(8, 4, 8);
+    var cubeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000, transparent:true, opacity:0.6});
+    var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+    cube.name='cube';
+    cube.castShadow = true;
+// add the cube to the scene
+    scene.add(cube);
+//add second cude
+    var cubeGeometry = new THREE.BoxGeometry(9, 7, 3);
+    var cubeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000, transparent:true, opacity:0.6});
+    var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+    cube.name='cube';
+    cube.castShadow = true;
+// add the cube to the scene
+    scene.add(cube);
+// Sphere
+    var sphereGeometry = new THREE.SphereGeometry(5,8,20);
+    var sphereMaterial = new THREE.MeshLambertMaterial({color: 0x117799, tranparent:true, opacity:0.4});
+    var sphere = new THREE.Mesh(sphereGeometry,sphereMaterial);
+    sphere.name = 'opus';
+    scene.add(sphere);
+// clouds
+          var cloudGeometry = new THREE.SphereGeometry(6.25, 60, 60);
+        var cloudMaterial = createCloudMaterial();
+        var cloudMesh = new THREE.Mesh(cloudGeometry, cloudMaterial);
+        cloudMesh.name = 'clouds';
+        scene.add(cloudMesh);
+
+
+// position and point the camera to the center of the scene
+    camera.position.x = 15;
+    camera.position.y = 16;
+    camera.position.z = 13;
+    camera.lookAt(scene.position);
+// add spotlight for the shadows
+    var spotLight = new THREE.SpotLight(0xAAffff);
+    spotLight.position.set(20, 20, 10);
+    spotLight.shadow.camera.near = 50;
+    spotLight.shadow.camera.far = 9;
+    spotLight.castShadow = true;
+    scene.add(spotLight);
+// setup the control object for the control gui
+    control = new function() {
+        this.rotationSpeed = 0.015;
+        this.opacity = 0.6;
+        this.color = cubeMaterial.color.getHex();
+    };
+    addControlGui(control);
+//add control
+    cameraControl = new THREE.OrbitControls(camera);
+// add the output of the renderer to the html element
+    document.body.appendChild(renderer.domElement);
+// call the render function, after the first render, interval is determined
+// by requestAnimationFrame
+    render();
+}
+function addControlGui(controlObject) {
+    var gui = new dat.GUI();
+    gui.add(controlObject, 'rotationSpeed', -0.01, 0.01);
+    gui.add(controlObject, 'opacity', 0.1, 1);
+    gui.addColor(controlObject, 'color');
+}
+/**
+     * Called when the scene needs to be rendered. Delegates to requestAnimationFrame
+     * for future renders
+     */
+function render() {
+    // update the camera
+    var rotSpeed = control.rotationSpeed;
+    camera.position.x = camera.position.x * Math.cos(rotSpeed) + camera.position.z * Math.sin(rotSpeed);
+    camera.position.z = camera.position.z * Math.cos(rotSpeed) - camera.position.x * Math.sin(rotSpeed);
+    camera.lookAt(scene.position);
+    // change opacity
+    scene.getObjectByName('cube').material.opacity = control.opacity;
+    // change color
+    scene.getObjectByName('clouds').material.opacity = control.opacity;   
+
+    scene.getObjectByName('cube').material.color = new THREE.Color(control.color);
+    //controls
+    cameraControl.update();
+    // render using requestAnimationFrame
+    requestAnimationFrame(render);
+    renderer.render(scene, camera);
+}
+/**
+     * Function handles the resize event. This make sure the camera and the renderer
+     * are updated at the correct moment.
+     */
+function createCloudMaterial() {
+        var cloudTexture = THREE.ImageUtils.loadTexture("essential-threejs-master/assets/textures/planets/fair_clouds_4k.png");
+
+        var cloudMaterial = new THREE.MeshBasicMaterial();
+        cloudMaterial.map = cloudTexture;
+        cloudMaterial.transparent = true;
+
+
+        return cloudMaterial;
+    }
+function handleResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+// calls the init function when the window is done loading.
+window.onload = init;
+// calls the handleResize function when the window is resized
+window.addEventListener('resize', handleResize, false);
+
+</script>
+</body>
+
+</html>
+
